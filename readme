@@ -1,1 +1,88 @@
-说明
+说明:
+-----------------------2022.08.8--------------------------
+修改内容：
+配置文件：
+host:192.168.2.21
+user:root
+pass:123456
+port:16310
+db:testdb
+tbType:blong:null:0
+selectThreads:1:null:0:longblob
+insertThreads:0:null:0:./blob/longblob.mp4
+updateThreads:0:null:0
+deleteThreads:0:null:0
+exeType:time
+lasting:1
+createtb:0
+tbnum:1
+report-interval:2
+
+文件说明：
+tbType：common创建普通表，btiny创建只有一个tinyblob字段的表，bmedium创建只有一个mediumblob字段的表，bblob创建只有一个blob字段的表，blong创建只有longblob字段的表,bmix创建同时
+带有4个blob字段的表。
+selectThreads：如果是查询blob类型表的记录，最后一个字段表示将大对象导出到./outfile目录中的文件名，bmix表需要4个文件名，中间用下划线分割。
+insertThreads: 如果是写入blob类型的表，最后一个字段是要引入大对象文件的地址，bmix要写入4个文件，中间用下划线分割，注意4个字段的顺序：tinyblob，mediumblob，blob，longblob
+
+问题遗留：
+count的执行方式暂时有问题，需要确定修改。
+部分执行过程的统计时间位置调整到了实际执行的位置，没有放到线程实例里。其他类似的地方之后慢慢修改。
+大对象等相关操作的读写统计时间有的统计错误，待修改。
+间隔输出统计的功能，只在配置文件里留了修改入口，还没有考虑如何实现。
+
+考虑但还没有增加的功能：
+mysql的连接jar先在是8027,应该考虑通过配置文件，灵活选择不同jar的版本，以及能够支持其他数据库的jar的连接。
+考虑增加验证加密的连接方式。
+增加脚本或场景文件，执行大批量jdbc接口的测试方案。
+
+
+-----------------------2021.07.22--------------------------
+java -jar testMysqlStress.jar common
+common是配置文件，内容为：
+
+host:172.16.110.31
+user:root
+pass:Abc@1234
+port:16310
+db:mytest    //已经建好的库名
+tbType:common:varchar(6):15    //建表类型，common为普通表，对应还有hash，list，hash，range4种哈希表，varchar(6)为自定义的字段类型，15为每个表创建几个自定义字段，如果类型为空不写，则自动创建原有的mysql字段。
+selectThreads:0:*:id < 10000    //查询：*为查询的字段，自定义的字段为从field_0到定义的最大值，如果默认建表，则为其他的类型。id < 10000为where后的条件，可灵活修改。
+insertThreads:1:'ab',:15     //插入：根据自定义建表的字段类型，'ab',需要写入的内容，注意不要冲突，如果使用默认建表，此处可以留空，15为预计写入的字段数，需要和自定义建表一致。
+updateThreads:0    //更新和删除操作，当前未指定条件，有线程可用，但需要根据需要再进一步开发。
+deleteThreads:0
+exeType:time    //运行类型，time是lasting时间（秒数），count是lasting循环次数。
+lasting:60
+createtb:0    //0为当前产经不执行建表，1为建表。
+tbnum:10    //当前场景创建的表数。
+
+注意：分片表的名称请以tb_hash，tb_list，tb_range，tb_mod为准。
+测试完成后会统计全部有效的写入次数，总写入耗时，最大耗时，最小耗时，以及平均值。查询同样有记录。
+selectThreads,insertThreads,updateThreads，deleteThreads第二位的数字，是并行执行的线程数，0为不执行没有线程，理论上4个操作可以并行执行。
+其他功能可以讨论再补充。
+
+-----------old---------------
+1 mysql的压力测试工具，支持mysql5和mysql8,以及遵循mysql协议的各种衍生版集群数据库系统。
+
+2 配置文件说明：
+host:172.16.110.31 //连接地址
+user:root //用户名
+pass:Abc@1234 //密码
+port:16310 //端口
+db:mytest //库名，需要已经创建完成
+tbType:common //表名，接受tb_common，tb_hash，tb_hash，tb_list，tb_mod，tb_range，第一个是普通表，后4个作为4种分片表，但是需要手动在数据库上创建分片规则。
+selectThreads:60:*:id < 10000 //查询线程，60为线程数，*为查询字段，id<10000为条件，如果没有字段或条件，默认执行tb_common_0上的一个id<1000的*字段查询。
+insertThreads:0 //写入及线程数。
+updateThreads:0
+deleteThreads:0
+exeType:time //以时间运行，也可count，以执行次数运行。
+lasting:600 //持续的时间秒书或循环运行的次数。
+createtb:0 //0为当次执行不建表，1为建表。
+tbnum:20 //建表的数量，例如 tb_common_0,tb_common_1 ... ...
+
+3 当前系统delete和update还没有明确的操作。
+
+4 执行后会统计插入和查询事件的执行总数，实际总耗时，最快，最慢时间，以及平均时间。
+
+5 还没有专门的事务操作。
+
+6 其他功能后续补充。

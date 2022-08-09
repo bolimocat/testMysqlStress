@@ -1,0 +1,21 @@
+host:192.168.2.21
+user:root
+pass:123456
+port:16310
+db:testdb
+tbType:blong:null:0
+selectThreads:1:null:0:longblob
+insertThreads:0:null:0:./blob/longblob.mp4
+updateThreads:0:null:0
+deleteThreads:0:null:0
+exeType:time
+lasting:1
+createtb:0
+tbnum:1
+report-interval:2
+
+--createtb:0 建表,0 不建表
+--tbtype:bmix 常规表,btiny tiny长度blob字段表,bmedium medium长度blob字段表,bblob blob长度blob字段表,blong long长度blob字段表, bmix 混合长度blob字段表
+--selectThreads::null:0
+--insertThreads:0:null:0:./blob/tinyblob.txt_./blob/mediumblob.mp4_./blob/blob.png_./blob/longblob.mp4,插入的时候如果上面tbtype选择common，则默认插入固定内容，如果选择了不同的blob文件，则在这行最后写要插入的文件位置，如果是
+--bmix混合地址，则用下划线分割4个blob文件地址。
