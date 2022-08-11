@@ -1,9 +1,9 @@
 package com.testMysqlStress.function;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
-
 import com.testMysqlStress.dom.paraFileBean;
 import com.testMysqlStress.statistic.statisticInfo;
 import com.testMysqlStress.threads.runMysqlCreatetb;
@@ -27,7 +27,7 @@ public class main {
 
 	@SuppressWarnings("static-access")
 	public static void main(String[] args) {
-		
+//		Date dt= new Date();
 		
 		commonkit ck = new commonkit();
 //		ArrayList paraList = ck.fetchLine("./file/dblink");//按行读取配置文件
@@ -144,76 +144,7 @@ public class main {
 				
 					for(int i=0;i<loop;i++) {
 						for(int a = 0;a<insertthreadnum;a++) {
-							Thread ta = new Thread(new runMysqlInsert(host,user,pass,port,db,tbnum,insertValue,Integer.valueOf(insertFieldnum)));
-							ta.start();
-							try {
-								ta.sleep(10);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						for(int b = 0;b<updatethreadnum;b++) {
-							Thread tb = new Thread(new runMysqlUpdate(host,user,pass,port,db,tbnum));
-							tb.start();
-							try {
-								tb.sleep(10);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						for(int c = 0;c<deletethreadnum;c++) {
-							Thread tc = new Thread(new runMysqlDelete(host,user,pass,port,db));
-							tc.start();
-							try {
-								tc.sleep(10);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						for(int d = 0;d<selectthreadnum;d++) {
-							Thread td = new Thread(new runMysqlSelect(host,user,pass,port,db,paraFiled,paraCondition,rand.nextInt(tbnum)));
-							td.start();
-							try {
-								td.sleep(10);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						//打印流水
-						Thread reportT = new Thread(new runStatistic(insertthreadnum,selectthreadnum,deletethreadnum,updatethreadnum));
-						reportT.start();
-						while(reportT.isAlive()) {
-							try {
-								reportT.sleep((interval-3)*1000);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-				}
-				}
-				
-				
-			}
-			
-
-			if(exeType.equals("time")) {
-				if(tbtype.equals("common")) {
-					int time = Integer.valueOf(lasting);//计时
-					Long max = ck.Time()+time * 1000;
-					int insertthreadnum = Integer.valueOf(insertThreads);//普通表写入并发
-					int updatethreadnum = Integer.valueOf(updateThreads);
-					int deletethreadnum = Integer.valueOf(deleteThreads);
-					int selectthreadnum = Integer.valueOf(selectThreads);
-					start = ck.Time();
-					while(ck.Time() < max) {
-
-						for(int a = 0;a<insertthreadnum;a++) {
-							Thread ta = new Thread(new runMysqlInsert(host,user,pass,port,db,tbnum,insertValue,Integer.valueOf(insertFieldnum)));
+							Thread ta = new Thread(new runMysqlInsert(host,user,pass,port,db,tbnum,insertValue,Integer.valueOf(insertFieldnum),interval));
 							ta.start();
 							try {
 								ta.sleep(10);
@@ -244,7 +175,77 @@ public class main {
 							}
 						}
 						for(int d = 0;d<selectthreadnum;d++) {
-							Thread td = new Thread(new runMysqlSelect(host,user,pass,port,db,paraFiled,paraCondition,rand.nextInt(tbnum)));
+							Thread td = new Thread(new runMysqlSelect(host,user,pass,port,db,paraFiled,paraCondition));
+							td.start();
+							try {
+								td.sleep(10);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+				}
+				}
+			}
+			
+
+			if(exeType.equals("time")) {
+				if(tbtype.equals("common")) {
+					int time = Integer.valueOf(lasting);//计时
+					Long currenttime = 0l;
+					int n = 1;
+					Long starttime = ck.Time();
+					Long max = ck.Time()+time * 1000;
+					int insertthreadnum = Integer.valueOf(insertThreads);//普通表写入并发
+					int updatethreadnum = Integer.valueOf(updateThreads);
+					int deletethreadnum = Integer.valueOf(deleteThreads);
+					int selectthreadnum = Integer.valueOf(selectThreads);
+					start = ck.Time();
+					SimpleDateFormat sdFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+					while(ck.Time() < max) {
+						for(int a = 0;a<insertthreadnum;a++) {
+							Thread ta = new Thread(new runMysqlInsert(host,user,pass,port,db,tbnum,insertValue,Integer.valueOf(insertFieldnum),interval));
+							ta.start();
+							try {
+								currenttime = starttime + n * interval * 1000l;
+								if(ck.Time() >= currenttime) {
+									System.out.println("[ "+sdFormatter.format(ck.Time())+" ] insert tds:"+insertthreadnum+" tps : "+ctMysql.itnums / (ctMysql.itall / 1000) +" , 平均耗时 : "+ ctMysql.itall / ctMysql.itnums+"毫秒，失败插入事务数： "+(ctMysql.itfnums-1)+" 。");
+									n = n+1;
+								}
+								ta.sleep(10);
+								
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						for(int b = 0;b<updatethreadnum;b++) {
+							Thread tb = new Thread(new runMysqlUpdate(host,user,pass,port,db,tbnum));
+							tb.start();
+							try {
+								currenttime = starttime + n * interval * 1000l;
+								if(ck.Time() >= currenttime) {
+//									System.out.println("[ "+sdFormatter.format(ck.Time())+" ] update tds:"+updatethreadnum+" 平均每秒更新事务 : "+ctMysql.utnums / (ctMysql.utall / 1000) +" , 平均耗时 : "+ ctMysql.utall / ctMysql.utnums+"毫秒，失败更新事务数： "+(ctMysql.utfnums-1)+" 。");
+									n = n+1;
+								}
+								tb.sleep(10);
+							} catch (InterruptedException e) {
+
+								e.printStackTrace();
+							}
+						}
+						for(int c = 0;c<deletethreadnum;c++) {
+							Thread tc = new Thread(new runMysqlDelete(host,user,pass,port,db));
+							tc.start();
+							try {
+								tc.sleep(10);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						for(int d = 0;d<selectthreadnum;d++) {
+							Thread td = new Thread(new runMysqlSelect(host,user,pass,port,db,paraFiled,paraCondition));
 							td.start();
 							try {
 								td.sleep(10);
@@ -365,8 +366,6 @@ public class main {
 				}
 				}
 				
-				
-				
 				//
 				if(tbtype.equals("bblob")) {
 					int time = Integer.valueOf(lasting);//计时
@@ -437,6 +436,7 @@ public class main {
 							Thread ta = new Thread(new runMysqlInsertLongblob(host, user, pass, port, db, tbnum, insertValue, Integer.valueOf(insertFieldnum),blobfilepath));
 							ta.start();
 							try {
+								
 								ta.sleep(10);
 								
 							} catch (InterruptedException e) {
@@ -532,10 +532,7 @@ public class main {
 				}
 				}
 			}
-			
 		
-		
-
 		System.out.println("");
 		if(!(insertThreads.equals("0"))) {
 			System.out.println("完成插入事务总数 : "+ctMysql.itnums+" , 插入事务总耗时 : "+ctMysql.itall+"毫秒 , 插入事务用时最短 : "+ctMysql.itfasted+"毫秒 ,"

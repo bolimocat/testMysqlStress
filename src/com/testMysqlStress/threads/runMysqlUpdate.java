@@ -35,7 +35,7 @@ public class runMysqlUpdate implements Runnable{
 		Date date = new Date();
 		date.setTime(kit.Time());
 		Long time = ctMysql.updatetb(host,user,pass,port,database,tbrange);
-		System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date)+",更新耗时：,"+time);
+//		System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date)+",更新耗时："+time+" ms");
 		
 	}
 

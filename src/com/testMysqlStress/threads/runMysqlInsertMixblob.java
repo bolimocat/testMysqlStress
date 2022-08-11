@@ -47,7 +47,7 @@ public class runMysqlInsertMixblob implements Runnable{
 	   Date date = new Date();
 	   date.setTime(kit.Time());
 		Long time = ctMysqlBlob.insertmixtb(host, user, pass, port, database, tbnum, insertValue,mixfile);
-		System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date)+",写入耗时：,"+time);
+		System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date)+",写入耗时："+time+" ms");
 	}
 
 }

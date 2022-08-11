@@ -1,18 +1,18 @@
-host:192.168.2.21
+host:192.168.2.17
 user:root
-pass:123456
+pass:Abc@1234
 port:16310
 db:testdb
 tbType:common:null:0
 selectThreads:0:null:0:tinyblob_mediumblob_blob_longblob
-insertThreads:16:null:0:./blob/tinyblob.txt_./blob/mediumblob.jpg_./blob/blob.jpg_./blob/longblob.mp4
+insertThreads:32:null:0:./blob/tinyblob.txt_./blob/mediumblob.jpg_./blob/blob.jpg_./blob/longblob.mp4
 updateThreads:0:null:0
 deleteThreads:0:null:0
 exeType:time
-lasting:60
-createtb:1
-tbnum:4
-report-interval:2
+lasting:100
+createtb:0
+tbnum:16
+report-interval:10
 
 --createtb:0 建表,0 不建表
 --tbtype:bmix 常规表,btiny tiny长度blob字段表,bmedium medium长度blob字段表,bblob blob长度blob字段表,blong long长度blob字段表, bmix 混合长度blob字段表

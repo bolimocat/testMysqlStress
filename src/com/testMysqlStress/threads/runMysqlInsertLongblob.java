@@ -47,7 +47,7 @@ public class runMysqlInsertLongblob implements Runnable{
 	   Date date = new Date();
 	   date.setTime(kit.Time());
 		Long time = ctMysqlBlob.insertlongtb(host, user, pass, port, database, tbnum, insertValue,longfile);
-		System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date)+",写入耗时：,"+time);
+		System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date)+",写入耗时："+time+" ms");
 	}
 
 }

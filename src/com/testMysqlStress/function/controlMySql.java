@@ -4,8 +4,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Random;
 
+import com.testMysqlStress.dom.cmSelectBean;
 import com.testMysqlStress.resource.createTbField;
 import com.testMysqlStress.statistic.statisticInfo;
 
@@ -316,54 +320,58 @@ public class controlMySql extends createTbField {
 	 * @param db
 	 * @param tbKind
 	 */
-	public Long selecttb(String host,String user,String pass,String port,String db,String paraFiled,String paraCondition,int tbnum) {
+	public ArrayList<cmSelectBean> selecttb(String host,String user,String pass,String port,String db,String paraFiled,String paraCondition) {
 		String selectTb = "";
+		commonkit kit = new commonkit();
+		Date date = new Date();
+		date.setTime(kit.Time());
+		ArrayList<cmSelectBean> selectlist = new ArrayList<cmSelectBean>();
 		Random rand=new Random();
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			String url = "jdbc:mysql://"+host+":"+port+"/"+db+"";
 			ct = DriverManager.getConnection(url, user, pass);
 
-//			int tbnum = rand.nextInt(tbnum);
-
 				if((paraFiled.equals("null"))||(paraCondition.equals("null"))) {
-					selectTb = "select "+SELECTFILED+" from "+CMTBNAME+"_"+tbnum+"  where id = "+ rand.nextInt(100) +"&& id > 0";
+					selectTb = "select "+SELECTFILED+" from "+CMTBNAME+"_0  where id = "+ rand.nextInt(100) +"&& id > 0";
+					ps = ct.prepareStatement(selectTb);
+					Long start = ck.Time();
+					rs = ps.executeQuery();
+					while(rs.next()) {
+						cmSelectBean cmsb = new cmSelectBean();
+						cmsb.setField1(rs.getInt(1));
+						cmsb.setField2(rs.getString(2));
+						selectlist.add(cmsb);
+						qnums = qnums + 1;
+					}
+//					if(rs.next()) {
+//						qnums = qnums + 1;
+//					}
+//					else {
+//						qfnums = qfnums + 1;
+//						System.out.println("QUERY ERROR : "+selectTb);
+//					}
+					Long end = ck.Time();
+					qconsume = ck.timer(start, end);
+					qall = qall + qconsume;
+					if(qconsume < qfasted ) {
+						qfasted = qconsume;
+					}
+					if(qconsume >= qfasted ) {
+						qfasted = qfasted;
+					}
+					
+					
+					if(qconsume > qslowed) {
+						qslowed = qconsume;
+					}
+					if(qconsume <= qslowed) {
+						qslowed = qslowed;
+					}
 				}
 				else {
-					selectTb = "select "+paraFiled+" from "+CMTBNAME+"_"+tbnum+" where "+paraCondition+" ;";
+					selectTb = "select "+paraFiled+" from "+CMTBNAME+"_0 where "+paraCondition+" ;";
 				}
-
-		
-		
-			ps = ct.prepareStatement(selectTb);
-			Long start = ck.Time();
-			rs = ps.executeQuery();
-			if(rs.next()) {
-				qnums = qnums + 1;
-			}
-			else {
-				qfnums = qfnums + 1;
-				System.out.println("QUERY ERROR : "+selectTb);
-			}
-			Long end = ck.Time();
-			qconsume = ck.timer(start, end);
-			
-			qall = qall + qconsume;
-			if(qconsume < qfasted ) {
-				qfasted = qconsume;
-			}
-			if(qconsume >= qfasted ) {
-				qfasted = qfasted;
-			}
-			
-			
-			if(qconsume > qslowed) {
-				qslowed = qconsume;
-			}
-			if(qconsume <= qslowed) {
-				qslowed = qslowed;
-			}
-			
 			
 		}catch (Exception eupdatetb) {
 			eupdatetb.printStackTrace();
@@ -378,7 +386,8 @@ public class controlMySql extends createTbField {
 				eCloseDb.printStackTrace();
 			}
 		}
-		return qconsume;
+//		System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date)+",查询耗时： "+qconsume+" ms");
+		return selectlist;
 	}
 
 
